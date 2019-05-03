@@ -16,6 +16,10 @@ Neuron::Neuron(const int numInputPerNerous) :numInputPerNerous(numInputPerNerous
 	for (int i = 0; i <= numInputPerNerous; i++) {
 		weight[i] = randomClamped();
 	}
+	momentum = new double[numInputPerNerous + 1];
+	for (int i = 0; i <= numInputPerNerous; i++) {
+		momentum[i] = 0;
+	}
 }
 
 Neuron::Neuron(Neuron&& n) noexcept :numInputPerNerous(n.numInputPerNerous), activation(n.activation), error(n.error), weight(n.weight) {

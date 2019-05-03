@@ -7,9 +7,8 @@
 #include"NeuronUtils.h"
 #include"Image.h"
 #include"ProgressBar.h"
+#include"Recognize.h"
 
-#include<opencv2/highgui/highgui.hpp>
-#include<opencv2/imgproc/imgproc.hpp>
 
 #define TRAIN_IMAGES_URL "train-images.idx3-ubyte"
 #define TRAIN_LABELS_URL "train-labels.idx1-ubyte"
@@ -24,7 +23,7 @@ typedef struct List {
 	int lenght;
 }ImageList;
 
-static ProgressBar progressBar(70000, "loading test and train image...");
+ProgressBar progressBar(70000, "loading test and train image...");
 ImageList loadImageAndLabelFile(const std::string& imagePath, const std::string& labelPath);
 void loadImageAndLabelFileInThread(std::promise<ImageList> &promiseObj, const std::string& imagePath, const std::string& labelPath);
 void reset(const std::string& imagePath, const std::string& labelPath);
@@ -34,80 +33,45 @@ void preProcessInputData(const uint8_t *pixel, double *out, int size);
 double train(const ImageList& trainList, BPNeuronNet& bpNeuronNet);
 int test(const ImageList& testList, BPNeuronNet& bpNeuronNet);
 
-void draw(int x, int y);
-void drawCursor(int x, int y);
-void on_mouse(int event, int x, int y);
 
 int main()
 {
 	using namespace std;
-	cout << "请输入数字：1.训练BP神经网络，2.手写板" << endl;
-	int choice;
-	cin >> choice;
-	switch (choice)
-	{
-	case 1: {
-		promise<ImageList> trainingObj;
-		future<ImageList> trainFutureObj = trainingObj.get_future();
+	promise<ImageList> trainingObj;
+	future<ImageList> trainFutureObj = trainingObj.get_future();
 
-		promise<ImageList> testObj;
-		future<ImageList> testFutureObj = testObj.get_future();
+	promise<ImageList> testObj;
+	future<ImageList> testFutureObj = testObj.get_future();
 
-		thread t1(loadImageAndLabelFileInThread, ref(trainingObj), TRAIN_IMAGES_URL, TRAIN_LABELS_URL);
-		thread t2(loadImageAndLabelFileInThread, ref(testObj), TEST_IMAGES_URL, TEST_LABELS_URL);
+	thread t1(loadImageAndLabelFileInThread, ref(trainingObj), TRAIN_IMAGES_URL, TRAIN_LABELS_URL);
+	thread t2(loadImageAndLabelFileInThread, ref(testObj), TEST_IMAGES_URL, TEST_LABELS_URL);
 
-		ImageList trainingImageList = trainFutureObj.get();
-		ImageList testImageList = testFutureObj.get();
+	ImageList trainingImageList = trainFutureObj.get();
+	ImageList testImageList = testFutureObj.get();
 
-		t1.join();
-		t2.join();
+	t1.join();
+	t2.join();
 
-		testImageList.imageList[rand() % testImageList.lenght].print();
+	auto startTime = getCurrentTime();
+	BPNeuronNet bpNeuronNet(trainingImageList.imageList[0].getRow()*trainingImageList.imageList[0].getColumn(), 0.1);
+	//bpNeuronNet.addLayer(784);
+	bpNeuronNet.addLayer(100);
+	bpNeuronNet.addLayer(10);
+	double error = train(trainingImageList, bpNeuronNet);
+	//while (error > 0.01) {
+	//	error = train(trainingImageList, bpNeuronNet);
+	//	cout << "now error rate:" << error << endl;
+	//	reset(TRAIN_IMAGES_URL, TRAIN_LABELS_URL);
+	//}
 
-		auto startTime = getCurrentTime();
-		BPNeuronNet bpNeuronNet(trainingImageList.imageList[0].getRow()*trainingImageList.imageList[0].getColumn(), 0.4);
-		//bpNeuronNet.addLayer(784);
-		bpNeuronNet.addLayer(200);
-		bpNeuronNet.addLayer(10);
-		double error = train(trainingImageList, bpNeuronNet);
-		//while (error > 0.01) {
-		//	error = train(trainingImageList, bpNeuronNet);
-		//	cout << "now error rate:" << error << endl;
-		//	reset(TRAIN_IMAGES_URL, TRAIN_LABELS_URL);
-		//}
+	cout << "error rate: " << error << endl;
+	cout << "time:" << getCurrentTime() - startTime << endl;
+	auto success = test(testImageList, bpNeuronNet);
+	cout << "success:" << success << "cout:" << testImageList.lenght << endl;
+	cout << "time:" << getCurrentTime() - startTime << endl;
 
-		cout << "error rate: " << error << endl;
-
-		auto success = test(testImageList, bpNeuronNet);
-		cout << "success:" << success << "cout:" << testImageList.lenght << endl;
-		cout << "time:" << getCurrentTime() - startTime << endl;
-		break;
-	}
-	case 2: {
-		using namespace cv;
-		int red, green, blue;
-		Mat imagen;
-		Mat screenBuffer;
-		int drawing;
-		int r, last_x, last_y;
-
-		drawing = 0;
-		r = 3;
-		red = green = blue = 0;
-		last_x = last_y = 0;
-
-		imagen.create(Size(128, 128), CV_8UC3);
-		imagen.setTo(Scalar(255, 255, 255));
-		screenBuffer = imagen.clone();
-		namedWindow("手写板", 0);
-		resizeWindow("手写板", 512, 512);
-		cout << screenBuffer.rows << " " << screenBuffer.cols << endl;
-		setMouseCallback("手写板",)
-
-		break;
-	}
-
-	}
+	cout << "手写数字识别测试" << endl;
+	handWritingRecognize(bpNeuronNet);
 
 }
 void reset(const std::string& imagePath, const std::string& labelPath){
@@ -129,7 +93,7 @@ void reset(const std::string& imagePath, const std::string& labelPath){
 }
 void preProcessInputDataWithNoise(const uint8_t *pixel, double *out, int size) {
 	for (int i = 0; i < size; i++) {
-		out[i] = ((pixel[i] > 0) ? 1.0 : 0.0) + randomFloat()*0.1f;
+		out[i] = ((pixel[i] > 0) ? 1.0 : 0.0);
 	}
 }
 void preProcessInputData(const uint8_t *pixel, double *out, int size) {
@@ -217,7 +181,7 @@ int test(const ImageList& testList, BPNeuronNet& bpNeuronNet) {
 	progressBar.reset(testList.lenght, "testing neuron net...");
 	for (int i = 0; i < testList.lenght; i++) {
 		preProcessInputData(testList.imageList[i].getPixel(), netTest, 28 * 28);
-		bpNeuronNet.process(netTest, &netOut);
+		bpNeuronNet.predict(netTest, &netOut);
 
 		int id = -1;
 		double maxValue = -999;

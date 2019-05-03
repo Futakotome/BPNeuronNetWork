@@ -36,6 +36,18 @@
     <ClInclude Include="ProgressBar.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="MouseDraw.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Recognize.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Features.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Segment.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -57,6 +69,18 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="ProgressBar.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseDraw.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Recognize.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Features.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Segment.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

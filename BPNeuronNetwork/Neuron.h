@@ -8,6 +8,7 @@ public:
 	double activation = 0;
 	double error = 0;
 	double* weight;
+	double* momentum;
 	void reset();
 	Neuron() = default;
 	Neuron(Neuron&& n) noexcept;

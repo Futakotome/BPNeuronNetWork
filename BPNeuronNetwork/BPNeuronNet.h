@@ -1,5 +1,6 @@
 #pragma once
 #include<vector>
+#include<algorithm>
 #include"NeuronLayer.h"
 
 constexpr auto ACTIVE_RESPONSE = 0.7;
@@ -11,16 +12,14 @@ public:
 	double learningRate, errorSum = 0;
 	std::vector<NeuronLayer> neuronLayers;
 
-	inline double sigmoidActive(double activation, double response) const;
-	static inline double backActive(double x);
+	static inline double sigmoidActive(double activation, double response);
+	static inline double backActive(double x,double response);
 	void updateNeuronLayer(NeuronLayer& nl, const double inputs[])const;
 	void trainNeuronLayer(NeuronLayer& nl, const double activations[], double errorArr[])const;
 	void trainUpdate(const double inputs[], const double targets[]);
-public:
-
 	double getError()const;
 	void training(double inputs[], const double targets[]);
-	void process(double inputs[], double * outputs[]);
+	void predict(double inputs[], double * outputs[]);
 	void addLayer(int num);
 
 	BPNeuronNet(int numberInput, double learningRate);

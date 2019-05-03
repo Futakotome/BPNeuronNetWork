@@ -112,7 +112,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opencv_world345.lib;opencv_world345d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opencv_world345d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -155,17 +155,23 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BPNeuronNet.h" />
+    <ClInclude Include="Features.h" />
     <ClInclude Include="Image.h" />
+    <ClInclude Include="MouseDraw.h" />
     <ClInclude Include="Neuron.h" />
     <ClInclude Include="NeuronLayer.h" />
     <ClInclude Include="NeuronUtils.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ProgressBar.h" />
+    <ClInclude Include="Recognize.h" />
+    <ClInclude Include="Segment.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BPNeuronNet.cpp" />
     <ClCompile Include="BPNeuronNetwork.cpp" />
+    <ClCompile Include="Features.cpp" />
     <ClCompile Include="Image.cpp" />
+    <ClCompile Include="MouseDraw.cpp" />
     <ClCompile Include="Neuron.cpp" />
     <ClCompile Include="NeuronLayer.cpp" />
     <ClCompile Include="pch.cpp">
@@ -175,6 +181,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="ProgressBar.cpp" />
+    <ClCompile Include="Recognize.cpp" />
+    <ClCompile Include="Segment.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -2,11 +2,28 @@
 #include"BPNeuronNet.h"
 
 
-double BPNeuronNet::sigmoidActive(const double activation, const double response) const {
+double BPNeuronNet::sigmoidActive(const double activation, const double response) {
 	return 1.0 / (1.0 + exp(-activation * response));
 }
-double BPNeuronNet::backActive(const double x) {
-	return x * (1 - x);
+double tanhActive(const double activation) {
+	return (exp(activation) - exp(-activation)) / (exp(activation) + exp(-activation));
+}
+double reluActive(const double activation) {
+	return std::max(0.0, activation);
+	
+}
+double tanhbackactive(const double x) {
+	return 1 - pow(tanhActive(x), 2);
+}
+double reluBackActive(const double x) {
+	if (x > 0)
+		return 1;
+	else if (x <= 0);
+		return 0;
+
+}
+double BPNeuronNet::backActive(const double x,const double response) {
+	return sigmoidActive(x, response)*sigmoidActive(1 - x, response);
 }
 //正向传播 更新 获得每个神经元经过激活函数后的激活值 作为下一层的输入
 void BPNeuronNet::updateNeuronLayer(NeuronLayer& nl, const double inputs[])const {
@@ -23,6 +40,8 @@ void BPNeuronNet::updateNeuronLayer(NeuronLayer& nl, const double inputs[])const
 		}
 		netInput += curWeight[k];
 		nl.neurons[i].activation = sigmoidActive(netInput, ACTIVE_RESPONSE);//每个神经元 通过 激活函数
+		//nl.neurons[i].activation = reluActive(netInput);
+		//nl.neurons[i].activation = tanhActive(netInput);
 	}
 }
 //误差的反向传播
@@ -33,14 +52,17 @@ void BPNeuronNet::trainNeuronLayer(NeuronLayer& nl, const double preActivations[
 
 	for (int i = 0; i < numNeurous; i++) {
 		double* curWeight = neuronArr[i].weight;
-		const double error = neuronArr[i].error * backActive(neuronArr[i].activation);
+		const double error = neuronArr[i].error * backActive(neuronArr[i].activation,ACTIVE_RESPONSE);
+		//const double error = neuronArr[i].error*reluBackActive(neuronArr[i].activation);
+		//const double error = neuronArr[i].error*tanhbackactive(neuronArr[i].activation);
 
 		int j;
 		for (j = 0; j < numInputPerNeurous; j++) {
 			if (preErrorArr) {
 				preErrorArr[j] += curWeight[j] * error;
 			}
-			neuronArr[i].weight[j] += error * learningRate * preActivations[j];//更新权重
+			neuronArr[i].momentum[j] = 0.2*neuronArr[i].momentum[j] + error * learningRate * preActivations[j];//更新动量
+			neuronArr[i].weight[j] += neuronArr[i].momentum[j];//更新权重
 		}
 		neuronArr[i].weight[j] += error * learningRate;
 	}
@@ -86,7 +108,7 @@ void BPNeuronNet::training(double inputs[], const double targets[]) {
 		trainNeuronLayer(curLayer, preOutActivations, preError);
 	}
 }
-void BPNeuronNet::process(double inputs[], double* outputs[]) {
+void BPNeuronNet::predict(double inputs[], double* outputs[]) {
 	for (int i = 0; i <= numHiddenLayer; i++) {
 		updateNeuronLayer(neuronLayers[i], inputs);
 		inputs = neuronLayers[i].getActivation();

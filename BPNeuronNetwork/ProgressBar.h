@@ -22,7 +22,7 @@ public:
 	explicit ProgressBar(int max);
 	ProgressBar& operator++();
 	ProgressBar& operator+=(int max);
-	static void show();
+	void show();
 	void shutDown();
 	void reset(int max, const std::string& label);
 
